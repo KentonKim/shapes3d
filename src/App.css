@@ -1,0 +1,13 @@
+.app {
+  position: relative;
+}
+
+.app > .anim {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: green;
+  z-index: -1;
+}
