@@ -1,3 +1,4 @@
+import { useFrame } from "@react-three/fiber"
 import React, { useMemo, useRef } from "react"
 import * as THREE from 'three'
 
@@ -8,8 +9,15 @@ function MeshAnim({
         width,
         height,
         sep
+    },
+    colorOfXYZT,
+    zOfXYT,
+    anim: {
+        init,
+        update
     }
 }) {
+    let t = init // time
     let {positions, colors, normals} = useMemo(() => {
         let positions = []
         let colors = []
@@ -18,14 +26,10 @@ function MeshAnim({
             for (let xi = 0; xi < width; xi++) {
                 let x = sep * ( xi - ( width - 1 ) / 2. )
                 let y = sep * ( yi - ( height - 1 ) / 2. )
-                let z = 0 // hard coded for now
+                let z = zOfXYT(x,y,t)
                 positions.push( x, y, z )
 
-                let color = {
-                    r: 1,
-                    g: 1,
-                    b: 1 
-                }
+                let color = colorOfXYZT(x,y,z,t)
                 colors.push( color.r, color.g, color.b )
                 normals.push( 0, 0, 1 )
             }
@@ -36,7 +40,7 @@ function MeshAnim({
             colors: new Float32Array(colors),
             normals: new Float32Array(normals),
         }
-    }, [width, height, sep])
+    }, [width, height, sep, zOfXYT, colorOfXYZT, t])
 
     // index buffer
     let indices = useMemo(() => {
@@ -54,6 +58,28 @@ function MeshAnim({
         return new Uint16Array(indices)
     }, [width, height])
 
+    // animation
+    let posRef = useRef()
+    let colorRef = useRef()
+    useFrame(() => {
+        t = update(t)
+        const positions = posRef.current.array
+        const colors = colorRef.current.array
+        let i = 0
+        for (let yi = 0; yi < height; yi++) {
+            for (let xi = 0; xi < width; xi++) {
+                positions[i+2] = zOfXYT(positions[i], positions[i+1], t)
+                let c = colorOfXYZT(positions[i], positions[i+1], positions[i+2], t)
+                colors[i] = c.r    
+                colors[i+1] = c.g
+                colors[i+2] = c.b
+                i += 3
+            }
+        }
+
+        posRef.current.needsUpdate = true
+        colorRef.current.needsUpdate = true
+    })
 
     return (
         <mesh
@@ -62,12 +88,14 @@ function MeshAnim({
         >
             <bufferGeometry>
                 <bufferAttribute
+                    ref={posRef}
                     attach ='attributes-position'
                     array={positions}
                     count={positions.length / 3}
                     itemSize={3}
                 />
                 <bufferAttribute
+                    ref={colorRef}
                     attach ='attributes-color'
                     array={colors}
                     count={colors.length / 3}
@@ -96,6 +124,17 @@ function MeshAnim({
 }
 
 export function Anim() {
+    const zOfXYT = (x,y,t) => {
+        return Math.random()
+    }
+
+    const colorOfXYZT = (x,y,z,t) => {
+        return {
+            r: Math.random(),
+            g: Math.random(),
+            b: Math.random(),
+        }
+    }
     return (
         <MeshAnim 
             position={[0,0,0]}
@@ -104,6 +143,12 @@ export function Anim() {
                 width: 100,
                 height: 100,
                 sep: 0.2
+            }}
+            zOfXYT={zOfXYT}
+            colorOfXYZT={colorOfXYZT}
+            anim={{
+                init: 0,
+                update: (t) => t + 0.1
             }}
         />
     )
