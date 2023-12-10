@@ -2,6 +2,11 @@
   position: relative;
 }
 
+.app > *:not(.anim) {
+  z-index: 10;
+  position: inherit;
+}
+
 .app > .anim {
   position: fixed;
   top: 0;
@@ -10,4 +15,21 @@
   height: 100vh;
   background-color: black;
   z-index: 1;
+}
+
+.controls {
+  background-color: white;
+}
+
+.form-parameters {
+  display: flex;
+  flex-flow: column;
+}
+
+* {
+  border: 1px solid green;
+}
+
+.top-index {
+  z-index: 99;
 }
