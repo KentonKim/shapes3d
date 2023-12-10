@@ -69,7 +69,10 @@ function MeshAnim({
         let i = 0
         for (let yi = 0; yi < height; yi++) {
             for (let xi = 0; xi < width; xi++) {
-                positions[i+2] = zOfXYT(positions[i], positions[i+1], t)
+                // positions[i+2] = zOfXYT(positions[i], positions[i+1], t)
+                // const zValue = zOfXYT(positions[i], positions[i+1], t)
+                const zValue = zOfXYT(positions[i]+3*t, positions[i+1]+3*t, 1)
+                positions[i+2] = zValue > 0 ? zValue : zValue/ 5
                 let c = colorOfXYZT(positions[i], positions[i+1], positions[i+2], t)
                 colors[i] = c.r    
                 colors[i+1] = c.g
@@ -124,15 +127,16 @@ function MeshAnim({
     )
 }
 
-export function Anim() {
+export function Anim({noiseParameters}) {
     const seed = Math.floor(Math.random() * (2**16))
+    noise.seed(seed)
     const sampleNoise = (x, y, z) => {
-        let scale = 1/8
-        let octaves = 20
-        let persistence = 0.6
-        let lacunarity = 2
-        let amp = 1
-        let freq = 1
+        let scale = noiseParameters.scale
+        let octaves = noiseParameters.octaves
+        let persistence = noiseParameters.persistence
+        let lacunarity = noiseParameters.lacunarity
+        let amp = noiseParameters.amp
+        let freq = noiseParameters.freq
 
         let value = 0
         for (let i = 0; i < octaves; i++) {
